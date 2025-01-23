@@ -2,18 +2,15 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const csv = require('csv-parser');
-const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const archiver = require('archiver');
 const app = express();
 const upload = multer({ dest: './uploads' });
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
-app.get('/formater', (req, res) => {
+app.get('/', (req, res) => {
     res.render('index');
 });
 
@@ -21,137 +18,165 @@ function readCsvFile(filePath) {
     return new Promise((resolve, reject) => {
         const rows = [];
         fs.createReadStream(filePath, { encoding: 'utf8' })
-            .pipe(csv())  
+            .pipe(csv({ separator: ';' })) 
             .on('data', (data) => {
                 rows.push(data);
             })
             .on('end', () => {
-                console.log("CSV Data read from file:", rows);  
+                console.log("CSV Data read from file:", rows);
                 resolve(rows);
             })
             .on('error', (error) => reject(new Error(`Ошибка чтения CSV файла: ${error.message}`)));
     });
 }
 
+
 function matchOperations(requests, registry) {
     const matched = [];
     const unmatched = [];
 
-    requests.forEach((req) => {
-        const transactionId = req['TRANID'];  
-        const match = registry.find((row) => {
-            // Проверяем совпадения по разным возможным столбцам реестра
-            const tslIdMatch = (row['TSL_ID'] || '').trim() === (transactionId || '').trim();
-            const tranIdMatch = (row['Tran_ID'] || '').trim() === (transactionId || '').trim();
-            const uniqueTransactionIdMatch = (row['Унікальнийномер_транзакції_в_ПЦ'] || '').trim() === (transactionId || '').trim();
-            
-            return tslIdMatch || tranIdMatch || uniqueTransactionIdMatch;
+    requests.forEach(request => {
+        const tranId = (request['TRANID'] || '').trim(); 
+        const match = registry.find(row => {
+            const tslId = (row['TSL_ID'] || '').trim(); 
+            const regTranId = (row['TRANID'] || '').trim(); 
+
+            return tranId === tslId || tranId === regTranId;
         });
 
         if (match) {
-            // Если нашли совпадение, добавляем информацию в массив matched
-            matched.push({
-                'Дата операції': match['TRAN_DATE_TIME'] || match['Час та датаоперації'],
-                'Картка отримувача': req['Картка отримувача'],
-                'Сума зарахування': match['TRAN_AMOUNT'] || match['Сумаоперації,грн.'],
-                TSL_ID: match['TSL_ID'] || match['Tran_ID'],
-                'Код авторизації': match['APPROVAL'] || match['Кодавторизації'],
-                company: req['Назва компанії'],
-                sender_list: req['Номер листа'],
-                document: req['Додаткова інформація'],
-                additional: req['Додаткова інформація'],
-                sender: req['ПІБ']
-            });
+            const isAlreadyMatched = matched.some(item => item.TSL_ID === match['TSL_ID']);
+
+            if (!isAlreadyMatched) {
+                const processedData = {
+                    'Дата операції': match['TRAN_DATE_TIME'] || match['Час операції'],
+                    'Картка отримувача': match['PAN'],
+                    'Сума зарахування': match['TRAN_AMOUNT'] || match['Сума'],
+                    TSL_ID: match['TSL_ID'] || match['TRANID'],
+                    'Код авторизації': match['APPROVAL'] || '',
+                    company: Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))
+                        ? request[Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))]
+                        : 'Default value',
+                    sender_list: request['Номер вихідного листа'],
+                    document: request['Додаткова інформація'],
+                    additional: request['Додаткова інформація'],
+                    sender: request['ПІБ клієнта'],
+                    name: request['ПІБ клієнта']
+                };
+
+                if (
+                    processedData['Сума зарахування'] &&
+                    // processedData.TSL_ID &&
+                    processedData.sender
+                ) {
+                    matched.push(processedData);
+                } else {
+                    // console.log(`Пропуск некорректной записи: ${JSON.stringify(processedData)}`);
+                    console.log(processedData)
+                }
+            }
+
         } else {
-            // Если не нашли совпадение, добавляем в unmatched
-            unmatched.push(req);
+            unmatched.push(request);
         }
     });
 
-    console.log("Matched:", matched);  // Логируем совпавшие данные
-    console.log("Unmatched:", unmatched);  // Логируем не совпавшие данные
     return { matched, unmatched };
 }
 
-function generateDocument(matchedData) {
-    return new Promise((resolve, reject) => {
-        const templatePath = path.join(__dirname, 'template.docx');
-        const templateBuffer = fs.readFileSync(templatePath);
-        try {
-            const zip = new PizZip(templateBuffer);
-            const generatedFiles = [];
-
-            matchedData.forEach((data, index) => {
-                const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-                try {
-                    // Выводим все данные в консоль, чтобы проверить их
-                    console.log("Data to be set into document:", data);
-
-                    const dataToSet = {
-                        "DataOperatsiyi": data['Дата операції'] || "Default value",
-                        "KartkaOtrymuvacha": data['Картка отримувача'] || "Default value",
-                        "SumaZarakhuvannya": data['Сума зарахування'] || "Default value",
-                        "TSL_ID": data['TSL_ID'] || "Default value",
-                        "KodAvtoryzatsiyi": data['Код авторизації'] || "Default value",
-                        "company": data['Назва компанії'] || "Default value",
-                        "sender_list": data['Номер листа'] || "Default value",
-                        "document": data['Додаткова інформація'] || "Default value",
-                        "additinal": data['Додаткова інформація'] || "Default value",
-                        "sender": data['ПІБ'] || "Default value"
-                    };
-                    console.log("Data to be set into document:", dataToSet); 
 
 
-                    const buf = doc.getZip().generate({ type: 'nodebuffer' });
-                    const fileName = `output_${index + 1}.docx`;
-                    generatedFiles.push({ fileName, buffer: buf });
-
-
-                } catch (error) {
-                    reject(error);
-                }
-            });
-
-            resolve(generatedFiles); 
-        } catch (error) {
-            reject(error);
-        }
-    });
-}
-
-
-// Маршрут для загрузки файлов
 app.post('/upload', upload.fields([
-    { name: 'registryFiles', maxCount: 1 },
-    { name: 'requestFile', maxCount: 1 }
+    { name: 'registryFiles', maxCount: 10 },  // Задаем лимит на 10 файлов
+    { name: 'requestFile', maxCount: 10 }     // Задаем лимит на 10 файлов
 ]), async (req, res) => {
     try {
         if (!req.files['registryFiles'] || !req.files['requestFile']) {
             throw new Error('Не все файлы были загружены');
         }
-        const registryFile = req.files['registryFiles'][0];
-        const requestFile = req.files['requestFile'][0];
 
-        // Чтение данных из CSV файлов
-        const registryData = await readCsvFile(registryFile.path);
-        const requestData = await readCsvFile(requestFile.path);
+        // Извлекаем все файлы реестра и запросов партнера
+        const registryFiles = req.files['registryFiles'];
+        const requestFiles = req.files['requestFile'];
 
-        // Сопоставление операций
-        const { matched, unmatched } = matchOperations(requestData, registryData);
+        // Прочитаем все файлы по очереди
+        const registryDataPromises = registryFiles.map(file => readCsvFile(file.path));
+        const requestDataPromises = requestFiles.map(file => readCsvFile(file.path));
+        
+        const registryDataArray = await Promise.all(registryDataPromises);
+        const requestDataArray = await Promise.all(requestDataPromises);
 
-        // Генерация документов для каждой совпавшей операции
-        const generatedFiles = await generateDocument(matched);
+        // Теперь у нас есть все данные из файлов реестра и запросов
+        const matched = [];
+        const unmatched = [];
 
-        // Создание архива
+        // Пройдем по всем парам данных реестра и запроса
+        registryDataArray.forEach(registryData => {
+            requestDataArray.forEach(requestData => {
+                const matchResult = matchOperations(requestData, registryData);
+                matched.push(...matchResult.matched);
+                unmatched.push(...matchResult.unmatched);
+            });
+        });
+
+        if (matched.length === 0) {
+            return res.status(404).json({ message: 'Совпадений не найдено' });
+        }
+
+        let templatePath;
+        if (req.query.type === 'c2a') {
+            templatePath = path.join(__dirname, 'template_c2a.docx');
+        } else if (req.query.type === 'a2c') {
+            templatePath = path.join(__dirname, 'template_a2c.docx');
+        } else {
+            throw new Error('Неверный тип запроса. Поддерживаются только c2a и a2c');
+        }
+
+        const generateDocumentWithTemplate = async (matchedData, templatePath) => {
+            const templateBuffer = fs.readFileSync(templatePath);
+
+            const generatedFiles = [];
+            const processedTSLIds = new Set();
+
+            matchedData.forEach((data) => {
+                if (!data['Сума зарахування'] || processedTSLIds.has(data.TSL_ID)) return;
+
+                processedTSLIds.add(data.TSL_ID);
+                const zip = new PizZip(templateBuffer);
+                const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+                doc.render({
+                    "DataOperatsiyi": data['Дата операції'] || "Default value",
+                    "KartkaOtrymuvacha": data['Картка отримувача'] || "Default value",
+                    "SumaZarakhuvannya": data['Сума зарахування'] || "Default value",
+                    "TSL_ID": data['TSL_ID'] || "Default value",
+                    "KodAvtoryzatsiyi": data['Код авторизації'] || "Default value",
+                    "company": data.company || "Default value",
+                    "sender_list": data.sender_list || "Default value",
+                    "document": data.document || "Default value",
+                    "additional": data.additional || "Default value",
+                    "sender": data.sender || "Default value"
+                });
+
+                const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+                const fileName = `${data.sender || 'default_name'}.docx`;
+
+                generatedFiles.push({ fileName, buffer });
+            });
+
+            return generatedFiles;
+        };
+
+        const generatedFiles = await generateDocumentWithTemplate(matched, templatePath);
+
         const archive = archiver('zip', { zlib: { level: 9 } });
         res.setHeader('Content-Type', 'application/zip');
         res.setHeader('Content-Disposition', 'attachment; filename=documents.zip');
         archive.pipe(res);
 
-        // Добавление файлов в архив
         generatedFiles.forEach(file => {
             archive.append(file.buffer, { name: file.fileName });
-            console.log(`Adding file ${file.fileName} to the archive`);  // Логируем добавление файла в архив
+            console.log(`Добавлен файл ${file.fileName} в архив`);
         });
 
         archive.finalize();
@@ -161,9 +186,9 @@ app.post('/upload', upload.fields([
     }
 });
 
-const PORT = 3060;
+
+
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
-
-
