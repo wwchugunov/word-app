@@ -4,21 +4,29 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
 const PizZip = require('pizzip');
+const iconv = require('iconv-lite');
 const Docxtemplater = require('docxtemplater');
 const archiver = require('archiver');
 const app = express();
 const upload = multer({ dest: './uploads' });
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.get('/', (req, res) => {
+app.get('/processing/', (req, res) => {
     res.render('index');
 });
 
 function readCsvFile(filePath) {
     return new Promise((resolve, reject) => {
         const rows = [];
-        fs.createReadStream(filePath, { encoding: 'utf8' })
-            .pipe(csv({ separator: ';' })) 
+        // Чтение файла с конвертацией из кодировки Windows-1251 в UTF-8
+        const readStream = fs.createReadStream(filePath)
+            .pipe(iconv.decodeStream('win1251'))  // Декодируем поток из Windows-1251
+            .pipe(iconv.encodeStream('utf8'));   // Перекодируем в UTF-8
+
+        readStream
+            .pipe(csv({ separator: ';' })) // Разделитель для CSV
             .on('data', (data) => {
                 rows.push(data);
             })
@@ -29,6 +37,7 @@ function readCsvFile(filePath) {
             .on('error', (error) => reject(new Error(`Ошибка чтения CSV файла: ${error.message}`)));
     });
 }
+
 
 
 function matchOperations(requests, registry) {
@@ -48,31 +57,39 @@ function matchOperations(requests, registry) {
             const isAlreadyMatched = matched.some(item => item.TSL_ID === match['TSL_ID']);
 
             if (!isAlreadyMatched) {
-                const processedData = {
-                    'Дата операції': match['TRAN_DATE_TIME'] || match['Час операції'],
-                    'Картка отримувача': match['PAN'],
-                    'Сума зарахування': match['TRAN_AMOUNT'] || match['Сума'],
-                    TSL_ID: match['TSL_ID'] || match['TRANID'],
-                    'Код авторизації': match['APPROVAL'] || '',
-                    company: Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))
-                        ? request[Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))]
-                        : 'Default value',
-                    sender_list: request['Номер вихідного листа'],
-                    document: request['Додаткова інформація'],
-                    additional: request['Додаткова інформація'],
-                    sender: request['ПІБ клієнта'],
-                    name: request['ПІБ клієнта']
-                };
+                const fullCompanyName = Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))
+                    ? request[Object.keys(request).find(key => /Юридична\s+назва\s+ЄДРПОУ/i.test(key))]
+                    : 'Default value';
 
+
+                    const processedData = {
+                        'Дата операції': match['TRAN_DATE_TIME'] || match['Час та датаоперації'] || 'Дата не указана',
+                        'Картка отримувача': match['PAN'] || match['Номер картки'] || 'Номер не указан',
+                        'Сума зарахування': match['TRAN_AMOUNT'] || match['Сумаоперації,грн.'] || 0,
+                        TSL_ID: match['TSL_ID'] || match['Уникальныйномертранзакции в ПЦ'] || match['TRANID'],
+                        'Код авторизації': match['APPROVAL'] || match['Кодавторизації'] || 'Не указан',
+                        company: fullCompanyName,
+                        companyShort: fullCompanyName.slice(0, -16).trim(),
+                        sender_list: request['Номер вихідного листа'] || 'Не указан',
+                        document: request['Додаткова інформація'] || 'Нет информации',
+                        additional: request['Додаткова інформація'] || 'Нет дополнительной информации',
+                        sender: request['ПІБ клієнта'] || 'Не указан',
+                        name: request['ПІБ клієнта'],
+                        dogovir: request['Договір'] || 'Не указан'
+                    };
+
+
+                    
+                
+
+                console.log(processedData)
                 if (
                     processedData['Сума зарахування'] &&
-                    // processedData.TSL_ID &&
                     processedData.sender
                 ) {
                     matched.push(processedData);
                 } else {
-                    // console.log(`Пропуск некорректной записи: ${JSON.stringify(processedData)}`);
-                    console.log(processedData)
+                    console.log(processedData);
                 }
             }
 
@@ -86,31 +103,35 @@ function matchOperations(requests, registry) {
 
 
 
+
+
+
 app.post('/upload', upload.fields([
-    { name: 'registryFiles', maxCount: 10 },  // Задаем лимит на 10 файлов
-    { name: 'requestFile', maxCount: 10 }     // Задаем лимит на 10 файлов
+    { name: 'registryFiles', maxCount: 10 },
+    { name: 'requestFile', maxCount: 10 }
 ]), async (req, res) => {
     try {
+        // Проверяем наличие загруженных файлов
         if (!req.files['registryFiles'] || !req.files['requestFile']) {
-            throw new Error('Не все файлы были загружены');
+            return res.status(400).json({ error: 'Не все файлы были загружены' });
         }
 
-        // Извлекаем все файлы реестра и запросов партнера
         const registryFiles = req.files['registryFiles'];
         const requestFiles = req.files['requestFile'];
 
-        // Прочитаем все файлы по очереди
+        // Читаем данные из файлов
         const registryDataPromises = registryFiles.map(file => readCsvFile(file.path));
         const requestDataPromises = requestFiles.map(file => readCsvFile(file.path));
-        
-        const registryDataArray = await Promise.all(registryDataPromises);
-        const requestDataArray = await Promise.all(requestDataPromises);
 
-        // Теперь у нас есть все данные из файлов реестра и запросов
+        const [registryDataArray, requestDataArray] = await Promise.all([
+            Promise.all(registryDataPromises),
+            Promise.all(requestDataPromises)
+        ]);
+
         const matched = [];
         const unmatched = [];
 
-        // Пройдем по всем парам данных реестра и запроса
+        // Сопоставляем данные реестра и запросов
         registryDataArray.forEach(registryData => {
             requestDataArray.forEach(requestData => {
                 const matchResult = matchOperations(requestData, registryData);
@@ -119,17 +140,42 @@ app.post('/upload', upload.fields([
             });
         });
 
+
+        if (req.query.report === 'true') {
+            const report = {
+                matched: matched.map(item => ({
+                    name: item.sender || "Не указано",
+                    status: "Найдено"
+                })),
+                unmatched: unmatched
+                    .filter(item => item['ПІБ клієнта'] && item['ПІБ клієнта'] !== "") 
+                    .map(item => ({
+                        name: item['ПІБ клієнта'],
+                        status: "Не найдено"
+                    }))
+            };
+        
+            return res.status(200).json(report);
+        }
+        
+        
+
+
+
+        // Если совпадений нет, возвращаем соответствующий ответ
         if (matched.length === 0) {
             return res.status(404).json({ message: 'Совпадений не найдено' });
         }
 
-        let templatePath;
-        if (req.query.type === 'c2a') {
-            templatePath = path.join(__dirname, 'template_c2a.docx');
-        } else if (req.query.type === 'a2c') {
-            templatePath = path.join(__dirname, 'template_a2c.docx');
-        } else {
-            throw new Error('Неверный тип запроса. Поддерживаются только c2a и a2c');
+        // Определяем шаблон документа в зависимости от типа
+        const templatePath = req.query.type === 'c2a'
+            ? path.join(__dirname, 'template_c2a.docx')
+            : req.query.type === 'a2c'
+                ? path.join(__dirname, 'template_a2c.docx')
+                : null;
+
+        if (!templatePath) {
+            return res.status(400).json({ error: 'Неверный тип запроса. Поддерживаются только c2a и a2c' });
         }
 
         const generateDocumentWithTemplate = async (matchedData, templatePath) => {
@@ -155,7 +201,9 @@ app.post('/upload', upload.fields([
                     "sender_list": data.sender_list || "Default value",
                     "document": data.document || "Default value",
                     "additional": data.additional || "Default value",
-                    "sender": data.sender || "Default value"
+                    "sender": data.sender || "Default value",
+                    "companyShort": data.companyShort || "Default value",
+                    "dogovir": data.dogovir || "Default value",
                 });
 
                 const buffer = doc.getZip().generate({ type: 'nodebuffer' });
@@ -169,6 +217,7 @@ app.post('/upload', upload.fields([
 
         const generatedFiles = await generateDocumentWithTemplate(matched, templatePath);
 
+        // Создание ZIP-архива с файлами
         const archive = archiver('zip', { zlib: { level: 9 } });
         res.setHeader('Content-Type', 'application/zip');
         res.setHeader('Content-Disposition', 'attachment; filename=documents.zip');
@@ -176,7 +225,6 @@ app.post('/upload', upload.fields([
 
         generatedFiles.forEach(file => {
             archive.append(file.buffer, { name: file.fileName });
-            console.log(`Добавлен файл ${file.fileName} в архив`);
         });
 
         archive.finalize();
@@ -188,7 +236,7 @@ app.post('/upload', upload.fields([
 
 
 
-const PORT = 3000;
+const PORT = 1515;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });

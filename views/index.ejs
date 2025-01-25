@@ -1,171 +1,64 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузка файлов</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        p{
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7fc;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        form {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            box-sizing: border-box;
-        }
-
-        div {
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 16px;
-            font-weight: bold;
-            color: #34495e;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #34495e;
-            background-color: #ecf0f1;
-        }
-
-        button {
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        button:active {
-            background-color: #1c5b87;
-        }
-        .box_info{
-            padding: 40px;
-        }
-        .box_btn{
-            display: flex;
-        }
-        .box_btn :nth-child(1){
-            margin-right: 10%;
-        }
-        .box_btn button:nth-child(2){
-            background: #aab60a;
-        }
-
-    </style>
+    <title>Завантаження файлів</title>
+    <link rel="stylesheet" href="https://autote.tascombank.ua/views/index.css">
 </head>
 <body>
+
+<div class="container">
+    <div class="header">
+        <img src="https://tascombank.ua/static/media/TAS_logo_slogan.svg" alt="Логотип">
+        <div class="datetime" id="currentDateTime"></div>
+    </div>
+
     <div class="box_info">
-        <p>Загрузите файлы для обработки</p>
+        <p>Завантажте файли для обробки</p>
         <div class="info">
-            Всі файли виключно формату csv
-            Файли реєстру виключно з таблицею без доп описів
-        </div>
+            <h3>Інструкція:</h3>
+            <ul>
+                <li>Усі файли виключно формату <strong>CSV</strong>.</li>
+                <li>Файли реєстру повинні містити лише таблицю, без додаткових описів.</li>
+                <button class="instruction" type="button" onclick="showInstruction()">Детальніше</button>
+            </ul>
+        </div>        
     </div>
     <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-        <div>
-            <label for="registry">Выберите реестр:</label>
-            <input type="file" name="registryFiles" accept=".xlsx,.xls, .csv" multiple required>
+
+        <div class="upload-button" id="registryButton" ondrop="handleDrop(event, 'registry')" ondragover="handleDragOver(event)">
+            <label for="registry">
+                <input id="registry" type="file" name="registryFiles" accept=".xlsx,.xls,.csv" multiple required onchange="updateFileName('registry')">
+                <span id="registryButtonText">Завантажити реєстр</span>
+            </label>
+            <div class="file-info" id="registryFileName"></div>
         </div>
-        <div>
-            <label for="partnerQuery">Выберите запрос партнера:</label>
-            <input type="file" name="requestFile" accept=".xlsx,.xls, .csv" multiple required>
+
+        <div class="upload-button" id="partnerQueryButton" ondrop="handleDrop(event, 'partnerQuery')" ondragover="handleDragOver(event)">
+            <label for="partnerQuery">
+                <input id="partnerQuery" type="file" name="requestFile" accept=".xlsx,.xls,.csv" multiple required onchange="updateFileName('partnerQuery')">
+                <span id="partnerQueryButtonText">Завантажити запит партнера</span>
+            </label>
+            <div class="file-info" id="partnerQueryFileName"></div>
         </div>
+        
+        
         <div class="box_btn">
-            <button type="button" onclick="submitForm('a2c')">Загрузить c2a</button>
-            <button type="button" onclick="submitForm('c2a')">Загрузить a2c</button>
+            <button type="button" onclick="submitForm('c2a')">Завантажити c2a</button>
+            <button type="button" onclick="submitForm('a2c')">Завантажити a2c</button>
         </div>
+
     </form>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-  fetch('/upload', {
-    method: 'POST',
-    body: formData,  // formData - это объект с вашими файлами
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.statuses && data.statuses.length > 0) {
-      const statusMessage = data.statuses.map(status => 
-        `Клиент: ${status.client}, Статус: ${status.status}`
-      ).join('\n');
-      
-      Swal.fire({
-        title: 'Результаты обработки',
-        text: statusMessage,
-        icon: 'info',
-        confirmButtonText: 'Ок'
-      });
-    } else {
-      Swal.fire({
-        title: 'Ошибка',
-        text: 'Нет данных для обработки.',
-        icon: 'error',
-        confirmButtonText: 'Ок'
-      });
-    }
-  })
-  .catch(error => {
-    Swal.fire({
-      title: 'Ошибка',
-      text: 'Произошла ошибка при отправке файлов.',
-      icon: 'error',
-      confirmButtonText: 'Ок'
-    });
-  });
-</script>
+    <div class="box_footer">
+         <p>© 2025</p>
+    </div>
+</div>
 
-    <script>
-        function submitForm(type) {
-            const form = document.getElementById('uploadForm');
-            const queryParams = new URLSearchParams({ type });
-            form.action = `/upload?${queryParams.toString()}`;
-            form.submit();
-        }
-    </script>
-    
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://autote.tascombank.ua/views/index.js"></script>
+
+
 </body>
 </html>

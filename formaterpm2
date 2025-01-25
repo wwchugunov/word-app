@@ -1,0 +1,86 @@
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1782ad230a81589bfa5127222750d65c'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735808612983-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/31fa9505658e8acf0075777b4daa0aa3'[39m
+node:events:490
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::1515
+    at Server.setupListenHandle [as _listen2] (node:net:1868:16)
+    at listenInCluster (node:net:1916:12)
+    at Server.listen (node:net:2004:7)
+    at Function.listen (/home/u8802/app/wordapp/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/u8802/app/wordapp/index.js:233:5)
+    at Module._compile (node:internal/modules/cjs/loader:1233:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1287:10)
+    at Module.load (node:internal/modules/cjs/loader:1091:32)
+    at Module._load (node:internal/modules/cjs/loader:938:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:83:12)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1895:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 1515
+}
+
+Node.js v20.4.0
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735562671892-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735894581757-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/7fc317ef89a2ca52e43d9152f1d1702e'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563538102-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/25830ac30d42881e98e0486ac64049fc'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/25f035b838db8d1140a8d362099d722b'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563557048-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/3e986bb1ef9c23ff334473552521ee6c'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563557048-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563637744-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735898650243-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735826475410-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/views'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735564664441-reestr.csv'[39m
+node:events:490
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::1515
+    at Server.setupListenHandle [as _listen2] (node:net:1868:16)
+    at listenInCluster (node:net:1916:12)
+    at Server.listen (node:net:2004:7)
+    at Function.listen (/home/u8802/app/wordapp/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/u8802/app/wordapp/index.js:233:5)
+    at Module._compile (node:internal/modules/cjs/loader:1233:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1287:10)
+    at Module.load (node:internal/modules/cjs/loader:1091:32)
+    at Module._load (node:internal/modules/cjs/loader:938:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:83:12)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1895:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 1515
+}
+
+Node.js v20.4.0
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735824361574-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/views'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/251c60d72f02df1939d3c1852c5b1c64'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/09bf0a6258a02a778582e2cf3e98979b'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735824361574-file_req.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735871555354-reestr_test.xlsx'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1782ad230a81589bfa5127222750d65c'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1782ad230a81589bfa5127222750d65c'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/files'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735803072778-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563047825-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/files'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/4c55993481cc8b0523a9f8aff6d65ca0'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/1735563212752-reestr.csv'[39m
+[31m[nodemon] Internal watch failed: ENOSPC: System limit for number of file watchers reached, watch '/home/u8802/app/wordapp/uploads/251c60d72f02df1939d3c1852c5b1c64'[39m
