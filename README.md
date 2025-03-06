@@ -5,8 +5,7 @@ This project enables automatic generation of Word documents based on data from E
 
 🛠️ Tech Stack
 
-Node.js v20.4.0 – core framework
-
+Node.js v20.4.0 – core framework\n
 Express 4.21.2 – backend server
 
 Multer 1.4.5-lts.1 – file upload and handling
