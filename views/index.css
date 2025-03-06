@@ -1,0 +1,315 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f8faff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    color: #333;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 40px;
+    flex: 1;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header img {
+    height: 40px;
+}
+
+.header .datetime {
+    font-size: 14px;
+    color: #555;
+    font-weight: bold;
+}
+
+.box_info p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1d4ed8;
+}
+
+.box_info .info {
+    font-size: 14px;
+    color: #555;
+    background-color: #f1f5f9;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 25px;
+}
+
+form div {
+    margin-bottom: 20px;
+}
+
+.upload-button label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.upload-button label:hover {
+    background-color: #1e40af;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.upload-button label:active {
+    background-color: #1e3a8a;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.2);
+}
+
+.upload-button input[type="file"] {
+    display: none;
+}
+
+.box_btn {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.box_btn button {
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    background: #2563eb;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.box_btn button:hover {
+    background-color: #1e40af;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.box_btn button:active {
+    transform: scale(0.98);
+    background-color: #1e3a8a;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.2);
+}
+
+.box_footer {
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
+    color: #6b7280;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+}
+
+.box_footer strong {
+    color: #1d4ed8;
+}
+
+.upload-button input[type="file"] {
+    display: none;
+}
+
+.upload-button .file-info {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #555;
+}
+
+.upload-button.dragover {
+    background-color: #1e40af;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.upload-button input[type="file"] {
+    display: none;
+}
+
+.upload-button label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.upload-button input[type="file"]:valid+label {
+    background-color: #4CAF50;
+    /* Зеленый цвет при выбранном файле */
+}
+
+.upload-button input[type="file"]:valid+label span {
+    color: white;
+    font-weight: bold;
+}
+
+.upload-button input[type="file"]:valid+label::after {
+    content: '✔';
+    /* Иконка галочки */
+    font-size: 20px;
+    color: white;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.upload-button input[type="file"]:invalid+label {
+    background-color: #FF5722;
+    /* Оранжевый цвет, если файл не выбран или неправильный */
+}
+
+.upload-button input[type="file"]:invalid+label span {
+    color: #fff;
+}
+
+.upload-button input[type="file"] {
+    display: none;
+    /* Скрываем реальный input */
+}
+
+.upload-button label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #2563eb;
+    /* Исходный цвет */
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    position: relative;
+}
+
+.upload-button label span {
+    color: #fff;
+}
+
+.upload-button input[type="file"]:valid+label {
+    background-color: #4CAF50;
+    /* Зеленый цвет при выбранном файле */
+}
+
+.upload-button.file-selected label {
+    background-color: #D4EDDA;
+    /* Светло-зеленый цвет после загрузки */
+}
+
+.upload-button.file-selected label span {
+    color: #155724;
+    /* Темный зеленый для текста */
+}
+
+.upload-button input[type="file"]:invalid+label {
+    background-color: #FF5722;
+    /* Оранжевый цвет, если файл не выбран или неправильный */
+}
+
+.upload-button input[type="file"]:invalid+label span {
+    color: #fff;
+}
+
+.upload-button input[type="file"]:valid+label::after {
+    content: '✔';
+    /* Иконка галочки */
+    font-size: 20px;
+    color: white;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.file-info {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.box_info {
+    position: relative;
+    /* Для того чтобы кнопка могла быть позиционирована относительно этого контейнера */
+}
+
+.instruction {
+    background-color: #86a188;
+    /* Зеленый фон */
+    color: white;
+    /* Белый текст */
+    border: none;
+    /* Без рамки */
+    padding: 8px 16px;
+    /* Меньше отступов для уменьшения размера кнопки */
+    font-size: 14px;
+    /* Меньший размер шрифта */
+    border-radius: 5px;
+    /* Скругленные углы */
+    cursor: pointer;
+    /* Указатель мыши при наведении */
+    position: absolute;
+    /* Абсолютное позиционирование */
+    bottom: 10px;
+    /* Отступ от нижнего края */
+    right: 10px;
+    /* Отступ от правого края */
+    transition: all 0.3s ease;
+    /* Плавный переход */
+}
+
+.instruction:hover {
+    background-color: #45a049;
+    /* Темно-зеленый при наведении */
+    transform: scale(1.05);
+    /* Немного увеличиваем кнопку */
+}
+
+.instruction:active {
+    transform: scale(0.98);
+    /* При нажатии — кнопка немного уменьшается */
+}
