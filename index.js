@@ -59,7 +59,7 @@ app.post('/upload', upload.fields([
     }
 });
 
-const PORT = 1515;
+const PORT = process.env.PORT || 1515;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
